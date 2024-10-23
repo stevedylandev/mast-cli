@@ -5,7 +5,11 @@ A simple TUI for sending casts on Farcaster
 
 ## Install
 
-Copy this command to download and run the install script
+There are several ways you can install Mast
+
+### Install Script
+
+You can copy this command to download and run the install script
 
 ```bash
 curl -fsSL https://stevedylan.dev/mast.sh | bash
@@ -13,12 +17,24 @@ curl -fsSL https://stevedylan.dev/mast.sh | bash
 
 [Download and view script](https://stevedylan.dev/mast.sh)
 
-Alternatively download a prebuilt binary from the [releases page](https://github.com/stevedylandev/mast-cli/releases)
+### Homebrew
 
-It is also available as a Homebrew tab
+Mast can be installed with [Brew](https://brew.sh) by using the command below.
 
 ```
 brew install stevedylandev/mast-cli/mast-cli
+```
+
+### Prebuilt Binary
+
+Releases are prebuilt binaries that can be downloaded from the [releases page](https://github.com/stevedylandev/mast-cli/releases)
+
+### Build From Source
+
+Building the CLI from source is pretty easy, just clone the repo, build, and install.
+
+```
+git clone https://github.com/stevedylandev/mast-cli && cd mast-cli && go build . && go install .
 ```
 
 ## Setup
