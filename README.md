@@ -15,6 +15,12 @@ curl -fsSL https://stevedylan.dev/mast.sh | bash
 
 Alternatively download a prebuilt binary from the [releases page](https://github.com/stevedylandev/mast-cli/releases)
 
+It is also available as a Homebrew tab
+
+```
+brew install stevedylandev/mast-cli/mast-cli
+```
+
 ## Setup
 
 Before you start hoisting some bangers, run the auth command to authorize the CLI. You will need your FID and a Signer Private Key. If you don't have a signer you can make one at [castkeys.xyz](https://castkeys.xyz)
