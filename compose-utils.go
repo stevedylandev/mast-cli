@@ -81,16 +81,14 @@ func SendCast(castData CastData) error {
 	if err != nil {
 		log.Fatalf("Problem retrieving credentials, run cast auth to authorize tbe CLI")
 	}
-	fid := uint64(rawFid) // FID of the user submitting the message
+	fid := uint64(rawFid)
 	network := protobufs.FarcasterNetwork_FARCASTER_NETWORK_MAINNET
 
 	resultChan := make(chan string)
 	errorChan := make(chan error)
 	go func() {
-		// Create a slice to hold our embeds
 		var embeds []*protobufs.Embed
 
-		// Only add non-empty URLs as embeds
 		if castData.URL1 != "" {
 			embeds = append(embeds, &protobufs.Embed{
 				Embed: &protobufs.Embed_Url{
@@ -107,10 +105,9 @@ func SendCast(castData CastData) error {
 			})
 		}
 
-		// Construct the cast add message
 		castAdd := &protobufs.CastAddBody{
 			Text:   castData.Message,
-			Embeds: embeds, // This will be an empty slice if no URLs were provided
+			Embeds: embeds,
 		}
 
 		if castData.Channel != "" {
@@ -134,7 +131,6 @@ func SendCast(castData CastData) error {
 			}
 		}
 
-		// Construct the message data object
 		msgData := &protobufs.MessageData{
 			Type:      protobufs.MessageType_MESSAGE_TYPE_CAST_ADD,
 			Fid:       fid,
@@ -143,27 +139,22 @@ func SendCast(castData CastData) error {
 			Body:      &protobufs.MessageData_CastAddBody{castAdd},
 		}
 
-		// Serialize the message data to bytes
 		msgDataBytes, err := proto.Marshal(msgData)
 		if err != nil {
 			log.Fatalf("Failed to encode message data: %v", err)
 			return
 		}
 
-		// Calculate the blake3 hash, truncated to 20 bytes
 		hasher := blake3.New()
 		hasher.Write(msgDataBytes)
 		hash := hasher.Sum(nil)[:20]
 
-		// Construct the actual message
 		msg := &protobufs.Message{
 			HashScheme:      protobufs.HashScheme_HASH_SCHEME_BLAKE3,
 			Hash:            hash,
 			SignatureScheme: protobufs.SignatureScheme_SIGNATURE_SCHEME_ED25519,
 		}
 
-		// Sign the message
-		// REPLACE THE PRIVATE KEY WITH YOUR OWN
 		if strings.HasPrefix(privateKeyHex, "0x") {
 			privateKeyHex = privateKeyHex[2:]
 		}
@@ -175,11 +166,9 @@ func SendCast(castData CastData) error {
 		privateKey := ed25519.NewKeyFromSeed(privateKeyBytes)
 		signature := ed25519.Sign(privateKey, hash)
 
-		// Continue constructing the message
 		msg.Signature = signature
 		msg.Signer = privateKey.Public().(ed25519.PublicKey)
 
-		// Serialize the message
 		msg.DataBytes = msgDataBytes
 		msgBytes, err := proto.Marshal(msg)
 		if err != nil {
@@ -187,7 +176,6 @@ func SendCast(castData CastData) error {
 			return
 		}
 
-		// Finally, submit the message to the network
 		url := "https://hub.farcaster.standardcrypto.vc:2281/v1/submitMessage"
 		//	url := "https://hub.pinata.cloud/v1/submitMessage"
 		resp, err := http.Post(url, "application/octet-stream", bytes.NewBuffer(msgBytes))

@@ -8,7 +8,6 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-// InputResult holds the values entered by the user
 type CastData struct {
 	Message string
 	URL1    string
@@ -29,8 +28,6 @@ var (
 )
 
 type errMsg error
-
-// PromptUserInput creates the UI and returns the entered values
 
 type inputModel struct {
 	inputs   []textinput.Model
