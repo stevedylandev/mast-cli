@@ -9,8 +9,35 @@ import (
 
 func main() {
 	app := &cli.App{
-		Name:  "mast",
-		Usage: "A simple TUI for sending casts",
+		Name: "mast",
+		Authors: []*cli.Author{
+			&cli.Author{
+				Name:  "steve",
+				Email: "hello@stevedylan.dev",
+			},
+		},
+		UsageText: "A simple TUI for sending casts",
+		Usage: `
+								 +
+                +++
+               +++++
+               +++++
+              +++++++
+              ++++++++
+             +++++++++=
+            +++++++++++
+            ++++++++++++
+           +++++++++++++=
+          +++++++++++++++
+          +++++++++++++++
+         ++++++++++
+        +++++=
+   +++++++++++++++++++++++++++++
+   +++++++++++++++++++++++++++++
+    +++++++++++++++++++++++++++
+     +++++++++++++++++++++++++
+      +++++++++++++++++++++++
+		`,
 		Commands: []*cli.Command{
 			{
 				Name:    "auth",
