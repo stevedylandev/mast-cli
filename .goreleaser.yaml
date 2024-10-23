@@ -47,3 +47,18 @@ changelog:
     exclude:
       - "^docs:"
       - "^test:"
+
+brews:
+  - name: mast-cli
+    homepage: "https://github.com/stevedylandev/mast-cli"
+    description: "A simple TUI for sending casts"
+    license: "MIT"
+    url_template: "https://github.com/stevedylandev/mast-cli/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
+    commit_msg_template: "Brew formula update for {{ .ProjectName }} version {{ .Tag }}"
+    repository:
+      owner: stevedylandev
+      name: homebrew-mast-cli
+      branch: main
+    commit_author:
+      name: goreleaser-bot
+      email: bot@goreleaser.com
