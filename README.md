@@ -29,6 +29,8 @@ Before you start hoisting some bangers, run the auth command to authorize the CL
 mast auth
 ```
 
+![mast-auth](https://cdn.stevedylan.dev/files/bafybeid3zxtmhrw3zdxfm5y7r6jm7w3c4ir3esnejz66pofn4znudpliki)
+
 ## Usage
 
 To send a cast, simply run the command below.
@@ -52,6 +54,8 @@ You will be given the option to fill out different fields for the cast
  Channel ID
  dev
 ```
+
+![mast-new](https://cdn.stevedylan.dev/files/bafybeihsj7qpqy4sbgfrpzvh5nciepwlwl646hnkfcyrtk2hdl2hvdmd6y)
 
 > [!NOTE]
 > To cast in a channel make sure you are already a member
