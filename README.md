@@ -1,6 +1,6 @@
 # Mast
 
-![img](https://cdn.stevedylan.dev/files/bafkreic4ha4atqbzrfjbrnzqw6uhzramsbh2gvhjsh3lausgtnfnraw7yi)
+![img](https://cdn.stevedylan.dev/files/bafkreigqnynyjfax3loj5maiwnvv3qqxotpoajiq4p6r6glmt6pjmowjke)
 A simple TUI for sending casts on Farcaster
 
 ## Install
