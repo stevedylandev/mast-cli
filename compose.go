@@ -49,7 +49,7 @@ func initialInputModel() inputModel {
 	inputs[message].Prompt = ""
 
 	inputs[url1] = textinput.New()
-	inputs[url1].Placeholder = "https://github.com/stevedylandev/cast-cli"
+	inputs[url1].Placeholder = "https://github.com/stevedylandev/mast-cli"
 	inputs[url1].CharLimit = 100
 	inputs[url1].Width = 50
 	inputs[url1].Prompt = ""
