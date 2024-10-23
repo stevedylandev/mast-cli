@@ -1,8 +1,10 @@
 package main
 
 import (
+	"encoding/hex"
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
@@ -42,7 +44,6 @@ func initialModel() model {
 			t.EchoMode = textinput.EchoPassword
 			t.EchoCharacter = '•'
 			t.Prompt = ""
-			t.Width = 30
 		}
 
 		m.inputs[i] = t
@@ -152,10 +153,22 @@ func GetFidAndPrivateKey() (uint64, string, error) {
 			return 0, "", fmt.Errorf("Both FID and Private Key must be provided")
 		}
 
-		// Convert FID from string to uint64
 		fid, err := strconv.ParseUint(fidString, 10, 64)
 		if err != nil {
 			return 0, "", fmt.Errorf("Invalid FID: must be a non-negative integer")
+		}
+
+		if strings.HasPrefix(privateKey, "0x") {
+			privateKey = privateKey[2:]
+		}
+
+		privateKeyBytes, err := hex.DecodeString(privateKey)
+		if err != nil {
+			return 0, "", fmt.Errorf("Invalid private key: must be a valid hex string")
+		}
+
+		if len(privateKeyBytes) != 32 {
+			return 0, "", fmt.Errorf("Invalid private key: must be exactly 32 bytes (64 hex characters)")
 		}
 
 		return fid, privateKey, nil
