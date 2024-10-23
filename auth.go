@@ -1,0 +1,182 @@
+package main
+
+import (
+	"fmt"
+	"strconv"
+
+	"github.com/charmbracelet/bubbles/textinput"
+	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
+)
+
+var (
+	focusedStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#7C65C1"))
+	blurredStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#767676"))
+	cursorStyle  = lipgloss.NewStyle()
+	noStyle      = lipgloss.NewStyle()
+)
+
+type model struct {
+	focusIndex int
+	inputs     []textinput.Model
+	err        error
+}
+
+func initialModel() model {
+	m := model{
+		inputs: make([]textinput.Model, 2),
+	}
+
+	var t textinput.Model
+	for i := range m.inputs {
+		t = textinput.New()
+		t.Cursor.Style = cursorStyle
+
+		switch i {
+		case 0:
+			t.Placeholder = "6596"
+			t.Focus()
+			t.Prompt = ""
+		case 1:
+			t.Placeholder = "Enter your Signer Private Key"
+			t.EchoMode = textinput.EchoPassword
+			t.EchoCharacter = '•'
+			t.Prompt = ""
+			t.Width = 30
+		}
+
+		m.inputs[i] = t
+	}
+
+	return m
+}
+
+func (m model) Init() tea.Cmd {
+	return textinput.Blink
+}
+
+func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		switch msg.String() {
+		case "ctrl+c", "esc":
+			return m, tea.Quit
+
+		case "tab", "shift+tab", "enter", "up", "down":
+			s := msg.String()
+
+			// Did the user press enter while the submit button was focused?
+			if s == "enter" && m.focusIndex == len(m.inputs)-1 {
+				return m, tea.Quit
+			}
+
+			// Cycle indexes
+			if s == "up" || s == "shift+tab" {
+				m.focusIndex--
+			} else {
+				m.focusIndex++
+			}
+
+			if m.focusIndex > len(m.inputs) {
+				m.focusIndex = 0
+			} else if m.focusIndex < 0 {
+				m.focusIndex = len(m.inputs)
+			}
+
+			cmds := make([]tea.Cmd, len(m.inputs))
+			for i := 0; i <= len(m.inputs)-1; i++ {
+				if i == m.focusIndex {
+					// Set focused state
+					cmds[i] = m.inputs[i].Focus()
+					m.inputs[i].PromptStyle = noStyle
+					m.inputs[i].TextStyle = noStyle
+					continue
+				}
+				// Remove focused state
+				m.inputs[i].Blur()
+				m.inputs[i].PromptStyle = noStyle
+				m.inputs[i].TextStyle = noStyle
+			}
+
+			return m, tea.Batch(cmds...)
+		}
+	}
+
+	// Handle character input and blinking
+	cmd := m.updateInputs(msg)
+
+	return m, cmd
+}
+
+func (m *model) updateInputs(msg tea.Msg) tea.Cmd {
+	cmds := make([]tea.Cmd, len(m.inputs))
+
+	for i := range m.inputs {
+		m.inputs[i], cmds[i] = m.inputs[i].Update(msg)
+	}
+
+	return tea.Batch(cmds...)
+}
+
+func (m model) View() string {
+	return fmt.Sprintf(
+		`
+Enter your FID and Signer private key
+Signers can be created at https://castkeys.xyz
+
+ %s
+ %s
+
+ %s
+ %s
+
+ %s
+`,
+		inputStyle.Render("FID"),
+		m.inputs[0].View(),
+		inputStyle.Render("Signer Private Key"),
+		m.inputs[1].View(),
+		continueStyle.Render("Press enter to submit"),
+	) + "\n"
+}
+
+func GetFidAndPrivateKey() (uint64, string, error) {
+	p := tea.NewProgram(initialModel())
+	m, err := p.Run()
+	if err != nil {
+		return 0, "", err
+	}
+
+	if m, ok := m.(model); ok {
+		fidString := m.inputs[0].Value()
+		privateKey := m.inputs[1].Value()
+
+		if fidString == "" || privateKey == "" {
+			return 0, "", fmt.Errorf("Both FID and Private Key must be provided")
+		}
+
+		// Convert FID from string to uint64
+		fid, err := strconv.ParseUint(fidString, 10, 64)
+		if err != nil {
+			return 0, "", fmt.Errorf("Invalid FID: must be a non-negative integer")
+		}
+
+		return fid, privateKey, nil
+	}
+
+	return 0, "", fmt.Errorf("Could not get input values")
+}
+
+func SetFidAndPrivateKey() error {
+	fid, privateKey, err := GetFidAndPrivateKey()
+	if err != nil {
+		return err
+	}
+
+	err = SaveFidAndPrivateKey(fid, privateKey)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
