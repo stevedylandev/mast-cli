@@ -29,7 +29,7 @@ Before you start hoisting some bangers, run the auth command to authorize the CL
 mast auth
 ```
 
-![mast-auth](https://cdn.stevedylan.dev/files/bafybeid3zxtmhrw3zdxfm5y7r6jm7w3c4ir3esnejz66pofn4znudpliki)
+![mast-auth](https://cdn.stevedylan.dev/files/bafybeib5fji7gxx54wpk2oy3f3medklkclwwz6tl73si6ejugsgzqlcvya)
 
 ## Usage
 
@@ -55,7 +55,7 @@ You will be given the option to fill out different fields for the cast
  dev
 ```
 
-![mast-new](https://cdn.stevedylan.dev/files/bafybeihsj7qpqy4sbgfrpzvh5nciepwlwl646hnkfcyrtk2hdl2hvdmd6y)
+![mast-new](https://cdn.stevedylan.dev/files/bafybeievnzmfviuwq7v57nyd4bprtk3khvtelegrqqiabswfwvblmksewy)
 
 > [!NOTE]
 > To cast in a channel make sure you are already a member
