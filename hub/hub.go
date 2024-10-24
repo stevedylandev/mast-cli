@@ -116,7 +116,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						m.customInput.Focus()
 						return m, textinput.Blink
 					}
-					m.selectedHub = i.title
+					m.selectedHub = i.description
 					return m, tea.Quit
 				}
 			} else {
