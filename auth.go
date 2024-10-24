@@ -1,8 +1,11 @@
 package main
 
 import (
+	"crypto/ed25519"
 	"encoding/hex"
 	"fmt"
+	"log"
+	"net/http"
 	"strconv"
 	"strings"
 
@@ -169,6 +172,26 @@ func GetFidAndPrivateKey() (uint64, string, error) {
 
 		if len(privateKeyBytes) != 32 {
 			return 0, "", fmt.Errorf("Invalid private key: must be exactly 32 bytes (64 hex characters)")
+		}
+
+		privKey := ed25519.NewKeyFromSeed(privateKeyBytes)
+
+		// Get public key
+		pubKey := privKey.Public().(ed25519.PublicKey)
+
+		// Convert public key to hex string
+		pubKeyHex := hex.EncodeToString(pubKey)
+
+		url := fmt.Sprintf("https://hub.farcaster.standardcrypto.vc:2281/v1/onChainSignersByFid?fid=%s&signer=0x%s", fidString, pubKeyHex)
+		//	url := "https://hub.pinata.cloud/v1/submitMessage"
+		resp, err := http.Get(url)
+		if err != nil {
+			log.Fatalf("Failed to send POST request: %v", err)
+		}
+		defer resp.Body.Close()
+		if resp.StatusCode != 200 {
+			log.Fatalf("Failed to verify key with hub")
+
 		}
 
 		return fid, privateKey, nil
