@@ -25,6 +25,8 @@ const (
 var (
 	inputStyle    = lipgloss.NewStyle().Foreground(lipgloss.Color("#7C65C1"))
 	continueStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#767676"))
+	textareaStyle = lipgloss.NewStyle().Padding(1)
+	promptStyle   = lipgloss.NewStyle().Border(lipgloss.NormalBorder(), false, false, false, true).BorderForeground(lipgloss.Color("#7C65C1"))
 )
 
 type errMsg error
@@ -42,25 +44,29 @@ func initialInputModel() inputModel {
 	ta.Placeholder = "Hello World!"
 	ta.Focus()
 	ta.ShowLineNumbers = false
+	ta.CharLimit = 1024
+	ta.Prompt = promptStyle.Render(" ")
+	ta.SetWidth(70)
+	ta.SetHeight(10)
 
 	var inputs []textinput.Model = make([]textinput.Model, 3)
 
 	inputs[url1] = textinput.New()
 	inputs[url1].Placeholder = "https://github.com/stevedylandev/mast-cli"
 	inputs[url1].CharLimit = 100
-	inputs[url1].Width = 50
+	inputs[url1].Width = 70
 	inputs[url1].Prompt = ""
 
 	inputs[url2] = textinput.New()
 	inputs[url2].Placeholder = "https://docs.farcaster.xyz"
 	inputs[url2].CharLimit = 100
-	inputs[url2].Width = 50
+	inputs[url2].Width = 70
 	inputs[url2].Prompt = ""
 
 	inputs[channel] = textinput.New()
 	inputs[channel].Placeholder = "dev"
 	inputs[channel].CharLimit = 100
-	inputs[channel].Width = 50
+	inputs[channel].Width = 70
 	inputs[channel].Prompt = ""
 
 	return inputModel{
@@ -142,6 +148,8 @@ func (m inputModel) View() string {
 		`
  %s
  %s
+ %s
+ %s
 
  %s
  %s
@@ -155,7 +163,9 @@ func (m inputModel) View() string {
  %s
 `,
 		inputStyle.Width(50).Render("Message"),
-		m.messageArea.View(),
+		continueStyle.Render("enter = new line"),
+		continueStyle.Render("tab = next field"),
+		textareaStyle.Render(m.messageArea.View()),
 		inputStyle.Width(50).Render("URL"),
 		m.inputs[url1].View(),
 		inputStyle.Width(50).Render("URL"),
