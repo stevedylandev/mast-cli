@@ -1,10 +1,11 @@
-package main
+package auth
 
 import (
 	"crypto/ed25519"
 	"encoding/hex"
 	"fmt"
 	"log"
+	"mast/hub"
 	"net/http"
 	"strconv"
 	"strings"
@@ -133,11 +134,11 @@ Signers can be created at https://castkeys.xyz
 
  %s
 `,
-		inputStyle.Render("FID"),
+		focusedStyle.Render("FID"),
 		m.inputs[0].View(),
-		inputStyle.Render("Signer Private Key"),
+		focusedStyle.Render("Signer Private Key"),
 		m.inputs[1].View(),
-		continueStyle.Render("Press enter to submit"),
+		blurredStyle.Render("Press enter to submit"),
 	) + "\n"
 }
 
@@ -180,7 +181,12 @@ func GetFidAndPrivateKey() (uint64, string, error) {
 
 		pubKeyHex := hex.EncodeToString(pubKey)
 
-		url := fmt.Sprintf("https://hub.farcaster.standardcrypto.vc:2281/v1/onChainSignersByFid?fid=%s&signer=0x%s", fidString, pubKeyHex)
+		hub, err := hub.RetrieveHubPreference()
+		if err != nil {
+			log.Fatal("Problem retrieving hub", err)
+		}
+
+		url := fmt.Sprintf("%s/v1/onChainSignersByFid?fid=%s&signer=0x%s", hub, fidString, pubKeyHex)
 		//	url := "https://hub.pinata.cloud/v1/submitMessage"
 		resp, err := http.Get(url)
 		if err != nil {

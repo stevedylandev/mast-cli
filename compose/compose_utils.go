@@ -1,4 +1,4 @@
-package main
+package compose
 
 import (
 	"bytes"
@@ -7,10 +7,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"mast/hub"
 	"mast/protobufs"
 	"net/http"
 	"strings"
 	"time"
+
+	auth "mast/auth"
 
 	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
@@ -77,7 +80,7 @@ type doneMsg string
 const farcasterEpoch int64 = 1609459200 // January 1, 2021 UTC
 
 func SendCast(castData CastData) error {
-	rawFid, privateKeyHex, err := FindFidAndPrivateKey()
+	rawFid, privateKeyHex, err := auth.FindFidAndPrivateKey()
 	if err != nil {
 		log.Fatalf("Problem retrieving credentials, run cast auth to authorize tbe CLI")
 	}
@@ -176,8 +179,12 @@ func SendCast(castData CastData) error {
 			return
 		}
 
-		url := "https://hub.farcaster.standardcrypto.vc:2281/v1/submitMessage"
-		//	url := "https://hub.pinata.cloud/v1/submitMessage"
+		hub, err := hub.RetrieveHubPreference()
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		url := hub + "/v1/submitMessage"
 		resp, err := http.Post(url, "application/octet-stream", bytes.NewBuffer(msgBytes))
 		if err != nil {
 			log.Fatalf("Failed to send POST request: %v", err)
