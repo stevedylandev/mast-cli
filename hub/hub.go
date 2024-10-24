@@ -11,7 +11,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-const listHeight = 14
+const listHeight = 20
 
 var (
 	titleStyle        = lipgloss.NewStyle().MarginLeft(2)
@@ -31,7 +31,7 @@ func (i hubItem) FilterValue() string { return i.title }
 
 type itemDelegate struct{}
 
-func (d itemDelegate) Height() int                             { return 1 }
+func (d itemDelegate) Height() int                             { return 2 }
 func (d itemDelegate) Spacing() int                            { return 0 }
 func (d itemDelegate) Update(_ tea.Msg, _ *list.Model) tea.Cmd { return nil }
 
@@ -41,12 +41,14 @@ func (d itemDelegate) Render(w io.Writer, m list.Model, index int, listItem list
 		return
 	}
 
-	str := fmt.Sprintf("%d. %s - %s", index+1, i.title, i.description)
-
 	if index == m.Index() {
-		fmt.Fprint(w, selectedItemStyle.Render("> "+str))
+		title := selectedItemStyle.Render("> " + i.title)
+		desc := selectedItemStyle.Render("  " + i.description)
+		fmt.Fprintf(w, "%s\n%s\n", title, desc)
 	} else {
-		fmt.Fprint(w, itemStyle.Render(str))
+		title := itemStyle.Render(i.title)
+		desc := itemStyle.Render(i.description)
+		fmt.Fprintf(w, "%s\n%s\n", title, desc)
 	}
 }
 
