@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 
+	"github.com/charmbracelet/bubbles/textarea"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -16,8 +17,7 @@ type CastData struct {
 }
 
 const (
-	message = iota
-	url1
+	url1 = iota
 	url2
 	channel
 )
@@ -25,68 +25,83 @@ const (
 var (
 	inputStyle    = lipgloss.NewStyle().Foreground(lipgloss.Color("#7C65C1"))
 	continueStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#767676"))
+	textareaStyle = lipgloss.NewStyle().Padding(1)
+	promptStyle   = lipgloss.NewStyle().Border(lipgloss.NormalBorder(), false, false, false, true).BorderForeground(lipgloss.Color("#7C65C1"))
 )
 
 type errMsg error
 
 type inputModel struct {
-	inputs   []textinput.Model
-	focused  int
-	err      error
-	canceled bool
+	messageArea textarea.Model
+	inputs      []textinput.Model
+	focused     int
+	err         error
+	canceled    bool
 }
 
 func initialInputModel() inputModel {
-	var inputs []textinput.Model = make([]textinput.Model, 4)
-	inputs[message] = textinput.New()
-	inputs[message].Placeholder = "Hello World!"
-	inputs[message].Focus()
-	inputs[message].CharLimit = 100
-	inputs[message].Width = 50
-	inputs[message].Prompt = ""
+	ta := textarea.New()
+	ta.Placeholder = "Hello World!"
+	ta.Focus()
+	ta.ShowLineNumbers = false
+	ta.CharLimit = 1024
+	ta.Prompt = promptStyle.Render(" ")
+	ta.SetWidth(70)
+	ta.SetHeight(10)
+
+	var inputs []textinput.Model = make([]textinput.Model, 3)
 
 	inputs[url1] = textinput.New()
 	inputs[url1].Placeholder = "https://github.com/stevedylandev/mast-cli"
 	inputs[url1].CharLimit = 100
-	inputs[url1].Width = 50
+	inputs[url1].Width = 70
 	inputs[url1].Prompt = ""
 
 	inputs[url2] = textinput.New()
 	inputs[url2].Placeholder = "https://docs.farcaster.xyz"
 	inputs[url2].CharLimit = 100
-	inputs[url2].Width = 50
+	inputs[url2].Width = 70
 	inputs[url2].Prompt = ""
 
 	inputs[channel] = textinput.New()
 	inputs[channel].Placeholder = "dev"
 	inputs[channel].CharLimit = 100
-	inputs[channel].Width = 50
+	inputs[channel].Width = 70
 	inputs[channel].Prompt = ""
 
 	return inputModel{
-		inputs:  inputs,
-		focused: 0,
-		err:     nil,
+		messageArea: ta,
+		inputs:      inputs,
+		focused:     -1, // -1 represents textarea focus
+		err:         nil,
 	}
 }
 
 func (m inputModel) Init() tea.Cmd {
-	return textinput.Blink
+	return tea.Batch(textarea.Blink, textinput.Blink)
 }
 
 func (m inputModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	var cmds []tea.Cmd = make([]tea.Cmd, len(m.inputs))
+	var cmds []tea.Cmd
 
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.Type {
 		case tea.KeyEnter:
-			if m.focused == len(m.inputs)-1 {
-				if m.isValid() {
-					return m, tea.Quit
-				}
+			if m.focused == -1 {
+				// When focused on textarea, handle Enter normally for new lines
+				var cmd tea.Cmd
+				m.messageArea, cmd = m.messageArea.Update(msg)
+				return m, cmd
 			} else {
-				m.nextInput()
+				// For input fields, handle Enter for submission
+				if m.focused == len(m.inputs)-1 {
+					if m.isValid() {
+						return m, tea.Quit
+					}
+				} else {
+					m.nextInput()
+				}
 			}
 		case tea.KeyCtrlC, tea.KeyEsc:
 			m.canceled = true
@@ -96,25 +111,43 @@ func (m inputModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case tea.KeyTab, tea.KeyCtrlN:
 			m.nextInput()
 		}
-		for i := range m.inputs {
-			m.inputs[i].Blur()
+
+		if m.focused == -1 {
+			var cmd tea.Cmd
+			m.messageArea, cmd = m.messageArea.Update(msg)
+			return m, cmd
+		} else {
+			m.messageArea.Blur()
+			for i := range m.inputs {
+				m.inputs[i].Blur()
+			}
+			m.inputs[m.focused].Focus()
 		}
-		m.inputs[m.focused].Focus()
 
 	case errMsg:
 		m.err = msg
 		return m, nil
 	}
 
-	for i := range m.inputs {
-		m.inputs[i], cmds[i] = m.inputs[i].Update(msg)
+	var cmd tea.Cmd
+	if m.focused == -1 {
+		m.messageArea, cmd = m.messageArea.Update(msg)
+		cmds = append(cmds, cmd)
 	}
+
+	for i := range m.inputs {
+		m.inputs[i], cmd = m.inputs[i].Update(msg)
+		cmds = append(cmds, cmd)
+	}
+
 	return m, tea.Batch(cmds...)
 }
 
 func (m inputModel) View() string {
 	return fmt.Sprintf(
 		`
+ %s
+ %s
  %s
  %s
 
@@ -130,7 +163,9 @@ func (m inputModel) View() string {
  %s
 `,
 		inputStyle.Width(50).Render("Message"),
-		m.inputs[message].View(),
+		continueStyle.Render("enter = new line"),
+		continueStyle.Render("tab = next field"),
+		textareaStyle.Render(m.messageArea.View()),
 		inputStyle.Width(50).Render("URL"),
 		m.inputs[url1].View(),
 		inputStyle.Width(50).Render("URL"),
@@ -142,18 +177,27 @@ func (m inputModel) View() string {
 }
 
 func (m *inputModel) nextInput() {
-	m.focused = (m.focused + 1) % len(m.inputs)
+	m.focused++
+	if m.focused >= len(m.inputs) {
+		m.focused = -1
+		m.messageArea.Focus()
+	} else {
+		m.messageArea.Blur()
+	}
 }
 
 func (m *inputModel) prevInput() {
 	m.focused--
-	if m.focused < 0 {
+	if m.focused < -1 {
 		m.focused = len(m.inputs) - 1
+		m.messageArea.Blur()
+	} else if m.focused == -1 {
+		m.messageArea.Focus()
 	}
 }
 
 func (m inputModel) isValid() bool {
-	return m.inputs[message].Value() != "" ||
+	return m.messageArea.Value() != "" ||
 		m.inputs[url1].Value() != "" ||
 		m.inputs[url2].Value() != "" ||
 		m.inputs[channel].Value() != ""
@@ -169,11 +213,11 @@ func ComposeCast() (CastData, error) {
 
 	if m, ok := m.(inputModel); ok {
 		if m.canceled {
-			return CastData{}, fmt.Errorf("cast composition canceled(")
+			return CastData{}, fmt.Errorf("cast composition canceled")
 		}
 
 		return CastData{
-			Message: m.inputs[message].Value(),
+			Message: m.messageArea.Value(),
 			URL1:    m.inputs[url1].Value(),
 			URL2:    m.inputs[url2].Value(),
 			Channel: m.inputs[channel].Value(),
