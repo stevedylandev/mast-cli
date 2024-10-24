@@ -176,10 +176,8 @@ func GetFidAndPrivateKey() (uint64, string, error) {
 
 		privKey := ed25519.NewKeyFromSeed(privateKeyBytes)
 
-		// Get public key
 		pubKey := privKey.Public().(ed25519.PublicKey)
 
-		// Convert public key to hex string
 		pubKeyHex := hex.EncodeToString(pubKey)
 
 		url := fmt.Sprintf("https://hub.farcaster.standardcrypto.vc:2281/v1/onChainSignersByFid?fid=%s&signer=0x%s", fidString, pubKeyHex)
