@@ -45,6 +45,8 @@ Before you start hoisting some bangers, run the auth command to authorize the CL
 mast login
 ```
 
+![mast-login](https://cdn.stevedylan.dev/files/bafybeicpkgpef2dn5dcxf3a34pu2mop4x4udjpjazva2taugpxeompdej4)
+
 This will provide a QR code for you to scan and will open an approval screen within Warpcast. If you prefer to provide your own signer yo ucan do so with the `auth` command.
 
 ```
