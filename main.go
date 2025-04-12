@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 
@@ -64,7 +65,49 @@ func main() {
 				Name:    "new",
 				Aliases: []string{"n"},
 				Usage:   "Send a new Cast",
+				Flags: []cli.Flag{
+					&cli.StringFlag{
+						Name:    "message",
+						Aliases: []string{"m"},
+						Usage:   "Cast message text",
+					},
+					&cli.StringFlag{
+						Name:    "url",
+						Aliases: []string{"u"},
+						Usage:   "URL to embed in the cast",
+					},
+					&cli.StringFlag{
+						Name:    "url2",
+						Aliases: []string{"u2"},
+						Usage:   "Second URL to embed in the cast",
+					},
+					&cli.StringFlag{
+						Name:    "channel",
+						Aliases: []string{"c"},
+						Usage:   "Channel ID for the cast",
+					},
+				},
 				Action: func(ctx *cli.Context) error {
+					message := ctx.String("message")
+					url1 := ctx.String("url")
+					url2 := ctx.String("url2")
+					channel := ctx.String("channel")
+
+					if message != "" || url1 != "" || url2 != "" || channel != "" {
+						castData := compose.CastData{
+							Message: message,
+							URL1:    url1,
+							URL2:    url2,
+							Channel: channel,
+						}
+
+						if message == "" && url1 == "" && url2 == "" {
+							return fmt.Errorf("at least a message or URL must be provided")
+						}
+
+						return compose.SendCast(castData)
+					}
+
 					castData, err := compose.ComposeCast()
 					if err != nil {
 						return err
