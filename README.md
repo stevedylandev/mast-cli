@@ -82,6 +82,23 @@ You will be given the option to fill out different fields for the cast
  dev
 ```
 
+You can also use optional flags to bypass the interactive TUI for a quick cast
+
+```
+NAME:
+   mast new - Send a new Cast
+
+USAGE:
+   mast new [command options]
+
+OPTIONS:
+   --message value, -m value  Cast message text
+   --url value, -u value      URL to embed in the cast
+   --url2 value, --u2 value   Second URL to embed in the cast
+   --channel value, -c value  Channel ID for the cast
+   --help, -h                 show help
+```
+
 ![mast-new](https://cdn.stevedylan.dev/files/bafybeievnzmfviuwq7v57nyd4bprtk3khvtelegrqqiabswfwvblmksewy)
 
 > [!NOTE]
