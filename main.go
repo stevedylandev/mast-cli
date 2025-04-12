@@ -7,6 +7,7 @@ import (
 	auth "mast/auth"
 	compose "mast/compose"
 	hub "mast/hub"
+	login "mast/login"
 
 	"github.com/urfave/cli/v2"
 )
@@ -49,6 +50,14 @@ func main() {
 				Usage:   "Authorize the CLI with your Signer Private Key and FID",
 				Action: func(ctx *cli.Context) error {
 					return auth.SetFidAndPrivateKey()
+				},
+			},
+			{
+				Name:    "login",
+				Aliases: []string{"l"},
+				Usage:   "Login with Farcaster mobile app via QR code",
+				Action: func(ctx *cli.Context) error {
+					return login.Login()
 				},
 			},
 			{

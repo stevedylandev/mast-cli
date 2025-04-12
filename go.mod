@@ -7,6 +7,7 @@ require (
 	github.com/charmbracelet/bubbletea v1.1.1
 	github.com/charmbracelet/lipgloss v0.13.0
 	github.com/golang/protobuf v1.5.0
+	github.com/mdp/qrterminal/v3 v3.2.1
 	github.com/urfave/cli/v2 v2.27.5
 	github.com/zeebo/blake3 v0.2.3
 	google.golang.org/protobuf v1.33.0
@@ -32,6 +33,8 @@ require (
 	github.com/sahilm/fuzzy v0.1.1 // indirect
 	github.com/xrash/smetrics v0.0.0-20240521201337-686a1a2994c1 // indirect
 	golang.org/x/sync v0.8.0 // indirect
-	golang.org/x/sys v0.24.0 // indirect
+	golang.org/x/sys v0.29.0 // indirect
+	golang.org/x/term v0.13.0 // indirect
 	golang.org/x/text v0.3.8 // indirect
+	rsc.io/qr v0.2.0 // indirect
 )
