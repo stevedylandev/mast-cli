@@ -40,7 +40,6 @@ func Login() error {
 	fmt.Println("\nScan this QR code with your Farcaster mobile app to approve the key:")
 	displayQRCode(signInResponse.DeepLinkUrl)
 
-	fmt.Println("\nOr open this link: " + signInResponse.DeepLinkUrl)
 	fmt.Println("\nWaiting for approval...")
 
 	// Step 3: Poll for approval status
@@ -99,6 +98,7 @@ func displayQRCode(deepLinkUrl string) {
 		BlackChar: qrterminal.WHITE,
 		WhiteChar: qrterminal.BLACK,
 		QuietZone: 1,
+		WithSixel: true,
 	}
 	qrterminal.GenerateWithConfig(deepLinkUrl, config)
 }
