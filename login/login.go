@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"mast/auth"
+	"mast/hub"
 	"net/http"
 	"os"
 	"time"
@@ -58,6 +59,21 @@ func Login() error {
 			return fmt.Errorf("Failed to save credentials: %v", err)
 		}
 		fmt.Println("Login successful! Your credentials have been saved.")
+		
+		// Step 5: Set up hub configuration if not already configured
+		hubURL, _, err := hub.RetrieveHubPreference()
+		if err != nil || hubURL == "" {
+			fmt.Println("\n🔧 Setting up hub configuration...")
+			fmt.Println("Neynar is the recommended hub provider for Farcaster.")
+			fmt.Println("You'll need to provide your Neynar API key.")
+			
+			err = hub.SetHub()
+			if err != nil {
+				return fmt.Errorf("failed to set up hub: %v", err)
+			}
+			fmt.Println("✅ Hub configuration completed!")
+		}
+		
 		return nil
 
 	case err := <-pollErr:

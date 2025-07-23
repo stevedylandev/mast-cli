@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"mast/hub"
 	"mast/protobufs"
@@ -179,13 +180,25 @@ func SendCast(castData CastData) error {
 			return
 		}
 
-		hub, err := hub.RetrieveHubPreference()
+		hub, apiKey, err := hub.RetrieveHubPreference()
 		if err != nil {
 			log.Fatal(err)
 		}
 
 		url := hub + "/v1/submitMessage"
-		resp, err := http.Post(url, "application/octet-stream", bytes.NewBuffer(msgBytes))
+		req, err := http.NewRequest("POST", url, bytes.NewBuffer(msgBytes))
+		if err != nil {
+			log.Fatalf("Failed to create request: %v", err)
+		}
+		req.Header.Set("Content-Type", "application/octet-stream")
+		
+		// Add API key header if available (for Neynar)
+		if apiKey != "" {
+			req.Header.Set("x-api-key", apiKey)
+		}
+
+		client := &http.Client{}
+		resp, err := client.Do(req)
 		if err != nil {
 			log.Fatalf("Failed to send POST request: %v", err)
 			return
@@ -201,7 +214,24 @@ func SendCast(castData CastData) error {
 		if resp.StatusCode == http.StatusOK {
 			resultChan <- response.Hash
 		} else {
-			errorChan <- fmt.Errorf("Failed to send the message. HTTP status: %d", resp.StatusCode)
+			// Read the response body for more detailed error information
+			bodyBytes, _ := io.ReadAll(resp.Body)
+			bodyStr := string(bodyBytes)
+			
+			var errorMsg string
+			switch resp.StatusCode {
+			case 401:
+				errorMsg = fmt.Sprintf("Authentication failed (401). Please check your API key.")
+			case 402:
+				errorMsg = fmt.Sprintf("Payment required (402). Please check your Neynar account status and billing.")
+			case 403:
+				errorMsg = fmt.Sprintf("Forbidden (403). You may not have permission to use this endpoint.")
+			case 429:
+				errorMsg = fmt.Sprintf("Rate limited (429). Please try again later.")
+			default:
+				errorMsg = fmt.Sprintf("Failed to send the message. HTTP status: %d. Response: %s", resp.StatusCode, bodyStr)
+			}
+			errorChan <- fmt.Errorf(errorMsg)
 		}
 	}()
 	p := tea.NewProgram(initialSpinnerModel())
