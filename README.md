@@ -47,7 +47,7 @@ mast login
 
 ![mast-login](https://cdn.stevedylan.dev/files/bafybeicpkgpef2dn5dcxf3a34pu2mop4x4udjpjazva2taugpxeompdej4)
 
-This will provide a QR code for you to scan and will open an approval screen within Warpcast. If you prefer to provide your own signer yo ucan do so with the `auth` command.
+This will provide a QR code for you to scan and will open an approval screen within Warpcast. If you prefer to provide your own signer you can do so with the `auth` command.
 
 ```
 mast auth
@@ -57,6 +57,54 @@ mast auth
 
 > [!TIP]
 > If you're not sure how to make a signer or prefer to make one locally, check out [CastKeys](https://github.com/stevedylandev/cast-keys) or [Farcaster Keys Server](https://github.com/stevedylandev/farcaster-keys-server)
+
+### Automatic Hub Setup
+
+When you run `mast auth` or `mast login`, the CLI will automatically set up your hub configuration if it's not already configured. This includes:
+
+1. **Hub Selection**: You'll be prompted to select your preferred hub (Neynar is recommended)
+2. **API Key Setup**: If you choose Neynar, you'll be prompted to enter your API key
+3. **Connection Verification**: The CLI will test the connection to ensure everything is working
+
+This ensures you have everything configured in one go, so you can start casting immediately after authentication.
+
+### Manual Hub Configuration
+
+If you need to change your hub configuration later, you can use the `hub` command:
+
+```
+mast hub set
+```
+
+### Hub Options
+
+Mast supports multiple Farcaster hubs for sending casts. Currently, **Neynar** is the recommended and default choice as other hubs have been shut down.
+
+Available options:
+
+- **Neynar** (Recommended) - Requires an API key
+- **Pinata** (DEPRECATED) - No longer available
+- **Standard Crypto** (DEPRECATED) - No longer available
+- **Custom** - Enter your own hub URL
+
+### Neynar API Key
+
+Neynar is currently the primary hub provider for Farcaster. To use it:
+
+1. **Get an API Key**: Visit [Neynar](https://neynar.com) to create an account and obtain your API key
+2. **Enter API Key**: You'll be prompted to enter your Neynar API key (it will be stored securely)
+3. **Verify Connection**: The CLI will test the connection to ensure everything is working
+
+> [!TIP]
+> Your API key is stored securely in your home directory and will be automatically used for all future casts.
+
+### Troubleshooting
+
+If you encounter issues with your hub connection:
+
+- **402 Payment Required**: Check your Neynar account status and billing
+- **401 Authentication Failed**: Verify your API key is correct
+- **403 Forbidden**: Ensure you have the necessary permissions for the hub API
 
 ## Usage
 
