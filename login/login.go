@@ -59,10 +59,8 @@ func (m apiKeyModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.quitting = true
 			return m, tea.Quit
 		case "enter":
-			if m.apiKeyInput.Value() != "" {
-				m.apiKey = m.apiKeyInput.Value()
-				return m, tea.Quit
-			}
+			m.apiKey = m.apiKeyInput.Value()
+			return m, tea.Quit
 		}
 	}
 
@@ -76,7 +74,7 @@ func (m apiKeyModel) View() string {
 		"\n%s\n\n%s\n\n%s",
 		lipgloss.NewStyle().Foreground(lipgloss.Color("#7C65C1")).Render("Enter your Neynar API key:"),
 		m.apiKeyInput.View(),
-		lipgloss.NewStyle().Foreground(lipgloss.Color("#767676")).Render("(Press enter to confirm)"),
+		lipgloss.NewStyle().Foreground(lipgloss.Color("#767676")).Render("(Press enter to confirm, or leave blank to skip)"),
 	)
 }
 
@@ -87,7 +85,7 @@ func Login() error {
 		fmt.Println("\n🔧 Setting up hub configuration...")
 		fmt.Println("Neynar is the recommended hub provider for Farcaster.")
 		fmt.Println("You'll need to provide your Neynar API key.")
-		
+
 		err = hub.SetHub()
 		if err != nil {
 			return fmt.Errorf("failed to set up hub: %v", err)
@@ -104,7 +102,7 @@ func Login() error {
 	if hubURL == "https://hub-api.neynar.com" && apiKey == "" {
 		fmt.Println("\n🔑 Neynar API key required")
 		fmt.Println("Please provide your Neynar API key to continue.")
-		
+
 		// Create a simple API key input
 		apiKeyInput := textinput.New()
 		apiKeyInput.Placeholder = "Enter your Neynar API key"
@@ -112,24 +110,24 @@ func Login() error {
 		apiKeyInput.Width = 50
 		apiKeyInput.EchoMode = textinput.EchoPassword
 		apiKeyInput.Focus()
-		
+
 		p := tea.NewProgram(initialAPIKeyModel(apiKeyInput))
 		m, err := p.Run()
 		if err != nil {
 			return fmt.Errorf("failed to get API key: %v", err)
 		}
-		
+
 		if apiKeyModel, ok := m.(apiKeyModel); ok {
-			if apiKeyModel.apiKey == "" {
-				return fmt.Errorf("API key is required for Neynar hub")
+			if apiKeyModel.apiKey != "" {
+				// Save the API key with the hub
+				err = hub.SaveHubPreference(hubURL, apiKeyModel.apiKey)
+				if err != nil {
+					return fmt.Errorf("failed to save API key: %v", err)
+				}
+				fmt.Println("✅ API key saved!")
+			} else {
+				fmt.Println("⚠️ Skipping API key setup - you can configure it later if needed")
 			}
-			
-			// Save the API key with the hub
-			err = hub.SaveHubPreference(hubURL, apiKeyModel.apiKey)
-			if err != nil {
-				return fmt.Errorf("failed to save API key: %v", err)
-			}
-			fmt.Println("✅ API key saved!")
 		}
 	}
 
@@ -161,7 +159,7 @@ func Login() error {
 			return fmt.Errorf("Failed to save credentials: %v", err)
 		}
 		fmt.Println("Login successful! Your credentials have been saved.")
-		
+
 		return nil
 
 	case err := <-pollErr:
@@ -202,9 +200,9 @@ func displayQRCode(deepLinkUrl string) {
 		BlackChar: qrterminal.BLACK,
 		WhiteChar: qrterminal.WHITE,
 		QuietZone: 1,
-		WithSixel: false, // Disable Sixel for better compatibility
+		WithSixel: true,
 	}
-	
+
 	qrterminal.GenerateWithConfig(deepLinkUrl, config)
 }
 
